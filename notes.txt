@@ -1,0 +1,19 @@
+<h2>To the micro controller</h2>
+<ul>
+  <li>VCE</li>
+  <li>IC</li>
+</ul>
+<h2>From the Micro</h2>
+<ul>
+  <li>Voltage</li>
+</ul>
+
+<h2>Caluclated value IB</h2>
+
+2 variables that are 8 bits
+
+
+
+hwo many steps -+10
+increment 0.001-1
+component type

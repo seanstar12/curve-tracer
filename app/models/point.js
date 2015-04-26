@@ -1,7 +1,27 @@
 import DS from 'ember-data';
 
-export default DS.Model.extend({
+var Point = DS.Model.extend({
+  baseCurrent: DS.belongsTo('baseCurrent'),
   volts: DS.attr('number'),
   current: DS.attr('number'), // voltage
-  test: DS.belongsTo('test'),
 });
+
+
+Point.reopenClass({
+  FIXTURES: [
+    {
+      id: 0,
+      baseCurrent: 0,
+      volts: 1,
+      current: 1, // voltage
+    },
+    {
+      id: 1,
+      baseCurrent: 0,
+      volts: 2,
+      current: 2, // voltage
+    },
+  ]
+});
+
+export default Point;
