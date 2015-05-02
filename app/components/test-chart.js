@@ -3,11 +3,8 @@ import ChartistChart from './chartist-chart';
 
 export default ChartistChart.extend({
   type: 'line',
-  test: null,
 
   init: function() {
-    var test = this.get('test');
-
     Ember.run.scheduleOnce('afterRender', this, 'setupToolTip');
 
     var chartData = {
@@ -39,13 +36,13 @@ export default ChartistChart.extend({
       offset: 0,
       showgrid: true,
       labelInterpolationFnc: function(value) {
-        return value + 'A'
+        return value + 'A';
       },
     },
     axisX: {
       showGrid: false,
       labelInterpolationFnc: function(value) {
-        return value + 'v'
+        return value + 'v';
       },
     },
   },
@@ -61,14 +58,14 @@ export default ChartistChart.extend({
   ],
 
   setupToolTip: function() {
-    var chart = $(this.get('element'));
+    var chart = Ember.$(this.get('element'));
 
     var toolTip = chart.append('<div class="tooltip"></div>')
                     .find('.tooltip')
                     .hide();
 
     chart.on('mouseenter', '.ct-point', function() {
-        var point = $(this),
+        var point = Ember.$(this),
             value = point.attr('ct:value'),
             seriesName = point.parent().attr('ct:series-name');
 
