@@ -13,6 +13,11 @@
     <ul class="right">
       <li>{{#link-to 'about'}}About{{/link-to}}</li>
     </ul>
+    {{#if hasHistory}}
+    <ul class="left">
+      <li><a href="#">History <span class="round info label">{{historyItems}}</span></a></li>
+    </ul>
+    {{/if}}
   </section>
 </nav>
 
