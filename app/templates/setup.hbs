@@ -8,7 +8,7 @@
   <h1>Setup Test</h1>
   <label>
   Type:
-  {{view "select" content=types value=selectedType}}
+  {{view "select" content=types value=model.type}}
   </label> 
   <br/>
 
@@ -24,8 +24,8 @@
     min=voltageRangeMin
     max=voltageRangeMax
     step=voltageRangeStep
-    from=selectedVoltageRangeFrom
-    to=selectedVoltageRangeTo
+    from=model.voltageRangeFrom
+    to=model.voltageRangeTo
     postfix="v"}}
   </label>
 
@@ -39,11 +39,11 @@
     min=incrementMin
     max=incrementMax
     step=incrementStep
-    from=selectedIncrement
+    from=model.increment
     postfix="v"}}
   </label>
 
-  {{current-steps steps=currentSteps}}
+  {{current-steps steps=model.currentSteps addStep="addStep" removeStep="removeStep"}}
 
   <hr />
 

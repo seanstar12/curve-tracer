@@ -5,14 +5,10 @@ export default Ember.Component.extend({
 
   actions: {
     addStep: function() {
-      this.get('steps').pushObject(0);
+      this.sendAction('addStep');
     },
     removeStep: function(index) {
-      var steps = this.get('steps');
-
-      if (steps.length > 1) {
-        steps.removeAt(index);
-      }
+      this.sendAction('removeStep', index);
     },
   },
 });

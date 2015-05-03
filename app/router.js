@@ -8,6 +8,7 @@ var Router = Ember.Router.extend({
 Router.map(function() {
   this.route('about');
   this.route('setup');
+  this.resource('results', {path: '/results/:test_id'});
 });
 
 export default Router;
