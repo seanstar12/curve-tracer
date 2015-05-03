@@ -11,19 +11,6 @@
   {{view "select" content=types value=selectedType}}
   </label> 
   <br/>
-  <label>
-  Voltage Step:
-  {{ember-ion-rangeslider
-    from_min="false"
-    from_max="false"
-    to_min="false"
-    to_max="false"
-    min=incrementMin
-    max=incrementMax
-    step=incrementStep
-    from=selectedIncrement
-    postfix="v"}}
-  </label>
 
   <label>
   Voltage Range:
@@ -42,7 +29,21 @@
     postfix="v"}}
   </label>
 
-    {{current-steps steps=currentSteps}}
+  <label>
+  Voltage Step:
+  {{ember-ion-rangeslider
+    from_min="false"
+    from_max="false"
+    to_min="false"
+    to_max="false"
+    min=incrementMin
+    max=incrementMax
+    step=incrementStep
+    from=selectedIncrement
+    postfix="v"}}
+  </label>
+
+  {{current-steps steps=currentSteps}}
 
   <hr />
 
