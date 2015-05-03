@@ -3,32 +3,6 @@ import ChartistChart from './chartist-chart';
 
 export default ChartistChart.extend({
   type: 'line',
-
-  init: function() {
-    Ember.run.scheduleOnce('afterRender', this, 'setupToolTip');
-
-    var chartData = {
-      labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-      series: [
-        {
-          name: 'woot',
-          data: [0, 1, 1,5, 1.8, 2.0, 2,1],
-        },
-        {
-          name: 'woot2',
-          data: [1,3,12],
-        },
-        {
-          name: 'woot3',
-          data: [3,4,5],
-        },
-      ]
-    };
-    this.set('data', chartData);
-
-    this._super();
-  },
-
   ratio: 'ct-minor-seventh',
   options: {
     showPoint: true,
@@ -56,6 +30,33 @@ export default ChartistChart.extend({
       }
     }],
   ],
+
+  init: function() {
+    var chartData = {
+      labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+      series: [
+        {
+          name: 'woot',
+          data: [0, 1, 1,5, 1.8, 2.0, 2,1],
+        },
+        {
+          name: 'woot2',
+          data: [1,3,12],
+        },
+        {
+          name: 'woot3',
+          data: [3,4,5],
+        },
+      ]
+    };
+    this.set('data', chartData);
+
+    this._super();
+  },
+
+  didInsertElement: function() {
+    Ember.run.scheduleOnce('afterRender', this, 'setupToolTip');
+  },
 
   setupToolTip: function() {
     var chart = Ember.$(this.get('element'));
