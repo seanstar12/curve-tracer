@@ -15,14 +15,5 @@ export default Ember.Controller.extend({
   selectedVoltageRangeFrom: 0,
   selectedVoltageRangeTo: 5,
 
-  currentSteps: [''],
-
-  actions: {
-    addStep: function() {
-      this.get('currentSteps').pushObject('');
-    },
-    removeStep: function(index) {
-      this.get('currentSteps').removeAt(index);
-    },
-  },
+  currentSteps: [0],
 });

@@ -1,0 +1,11 @@
+<label>
+Current Trace:
+{{#each steps as |step index|}}
+  {{#current-step value=step}}
+    <a {{action 'removeStep' index}} class="button postfix error">Remove</a>
+  {{/current-step}}
+{{/each}}
+</label>
+<div class="row collapse">
+  <a class="button" {{action 'addStep'}}>Add</a>
+</div>

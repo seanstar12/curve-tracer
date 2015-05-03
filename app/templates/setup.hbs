@@ -24,7 +24,7 @@
     from=selectedIncrement
     postfix="v"}}
   </label>
-  
+
   <label>
   Voltage Range:
   {{ember-ion-rangeslider
@@ -41,30 +41,10 @@
     to=selectedVoltageRangeTo
     postfix="v"}}
   </label>
+
+    {{current-steps steps=currentSteps}}
+
   <hr />
-  
-  <label>
-  Current Step:
-  {{#each currentSteps as |step index|}}
-    <div class="large-6 columns">
-      <div class="row collapse">
-        <div class="small-8 columns">
-          {{input type="number" value=step}} 
-        </div>
-        <div class="small-1 columns">
-          <span class="postfix prefix">mA</span>
-        </div>
-        <div class="small-3 columns">
-          <a {{action 'removeStep' index}} class="button postfix error">Remove</a>
-        </div>
-      </div>
-    </div>
-  {{/each}}
-  </label>
-  <div class="row collapse">
-    <a class="button" {{action 'addStep'}}>Add</a>
-  </div>
 
-  {{input type="button" value="Start" class="button"}}
-
+  <a class="button" {{action 'start'}}>Start</a>
 </div>

@@ -1,0 +1,23 @@
+<div class="row collapse">
+  <div class="small-8 columns">
+    {{input type="number"
+            min=currentMin
+            max=currentMax
+            step=currentStep
+            pattern="\d+"
+            value=value
+            class="error"
+            required="true"}}
+    {{#if hasError}}
+      <small class="error">Invalid entry:
+      Value must be greater than {{currentMin}} and less than {{currentMax}}
+      in steps no smaller than {{currentStep}}</small>
+    {{/if}}
+  </div>
+  <div class="small-1 columns">
+    <span class="postfix prefix">mA</span>
+  </div>
+  <div class="small-3 columns">
+    {{yield}}
+  </div>
+</div>
