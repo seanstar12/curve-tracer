@@ -3,13 +3,35 @@ import ChartistChart from './chartist-chart';
 
 export default ChartistChart.extend({
   type: 'line',
-  test: null,
+  ratio: 'ct-minor-seventh',
+  options: {
+    showPoint: true,
+    axisY: {
+      offset: 0,
+      showgrid: true,
+      labelInterpolationFnc: function(value) {
+        return value + 'A';
+      },
+    },
+    axisX: {
+      showGrid: false,
+      labelInterpolationFnc: function(value) {
+        return value + 'v';
+      },
+    },
+  },
+
+  responsiveOptions: [
+    ['screen and (min-width: 640px)', {
+      showPoint: true,
+      axisY: {
+        offset: 50,
+        showLabel: true,
+      }
+    }],
+  ],
 
   init: function() {
-    var test = this.get('test');
-
-    Ember.run.scheduleOnce('afterRender', this, 'setupToolTip');
-
     var chartData = {
       labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
       series: [
@@ -32,43 +54,19 @@ export default ChartistChart.extend({
     this._super();
   },
 
-  ratio: 'ct-minor-seventh',
-  options: {
-    showPoint: true,
-    axisY: {
-      offset: 0,
-      showgrid: true,
-      labelInterpolationFnc: function(value) {
-        return value + 'A'
-      },
-    },
-    axisX: {
-      showGrid: false,
-      labelInterpolationFnc: function(value) {
-        return value + 'v'
-      },
-    },
+  didInsertElement: function() {
+    Ember.run.scheduleOnce('afterRender', this, 'setupToolTip');
   },
 
-  responsiveOptions: [
-    ['screen and (min-width: 640px)', {
-      showPoint: true,
-      axisY: {
-        offset: 50,
-        showLabel: true,
-      }
-    }],
-  ],
-
   setupToolTip: function() {
-    var chart = $(this.get('element'));
+    var chart = Ember.$(this.get('element'));
 
     var toolTip = chart.append('<div class="tooltip"></div>')
                     .find('.tooltip')
                     .hide();
 
     chart.on('mouseenter', '.ct-point', function() {
-        var point = $(this),
+        var point = Ember.$(this),
             value = point.attr('ct:value'),
             seriesName = point.parent().attr('ct:series-name');
 
