@@ -12,11 +12,6 @@ var App = Ember.Application.extend({
   Resolver: Resolver
 });
 
-//App.ApplicationSerializer = DS.LSSerializer.extend();
-//App.ApplicationAdapter = DS.LSAdapter.extend({
-//    namespace: 'curve'
-//});
-
 loadInitializers(App, config.modulePrefix);
 
 export default App;
