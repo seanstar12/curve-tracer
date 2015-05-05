@@ -1,3 +1,25 @@
+/*
+  Example Api request:
+  
+    GET 10.0.1.23:8080/?a443b-7.32c20d0e1f
+  
+  yields:
+  
+    {
+      "id":443, 
+      "voltage": -7.32, 
+      "params" : { 
+        "id": 443, 
+        "voltage": -7.32, 
+        "baseCurrent": 0.20, 
+        "relay1": 0, 
+        "relay2": 1
+       }
+     }
+     
+   params should be disabled in final product.
+   
+*/
 #include <ethernet_comp.h>
 #include <UIPUdp.h>
 #include <UIPServer.h>
@@ -9,7 +31,6 @@
 #include <SPI.h>
 #include <UIPEthernet.h>
 #include <WString.h>
-//#include "/home/sean/Projects/curve-tracer/teensySketch/WebServer.h"
 
 byte mac[6] = {0x00,0x00,0x00,0x05,0x05,0x05};
 String readString = String(100);
@@ -19,6 +40,7 @@ String myStr;
 bool enableServer = true;
 bool enableApi = true;
 bool enableDebug = true;
+bool enableParams = true;
 
 EthernetServer server(80);
 EthernetServer api(8080);
@@ -209,18 +231,20 @@ void apiInterface(UIPClient client) {
    client.print(id);      
    client.print(", \"voltage\": ");
    client.print( (float(count)) / (float(count) * float(count)));
-   client.print(", \"params\" : { ");
-     client.print("\"id\": ");
-     client.print(id);
-     client.print(", \"voltage\": ");
-     client.print(voltage);
-     client.print(", \"baseCurrent\": ");
-     client.print(baseCurrent);
-     client.print(", \"relay1\": ");
-     client.print(relay1);
-     client.print(", \"relay2\": ");
-     client.print(relay2);
-     client.print("}");
+   if (enableParams) {
+     client.print(", \"params\" : { ");
+       client.print("\"id\": ");
+       client.print(id);
+       client.print(", \"voltage\": ");
+       client.print(voltage);
+       client.print(", \"baseCurrent\": ");
+       client.print(baseCurrent);
+       client.print(", \"relay1\": ");
+       client.print(relay1);
+       client.print(", \"relay2\": ");
+       client.print(relay2);
+       client.print("}");
+   }
    client.print("}");
    delay(100); // allow for browser to take our data.
    client.stop();
