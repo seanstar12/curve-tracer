@@ -1,30 +1,24 @@
+#include <ethernet_comp.h>
+#include <UIPUdp.h>
+#include <UIPServer.h>
+#include <UIPEthernet.h>
+#include <UIPClient.h>
+#include <Dns.h>
+#include <Dhcp.h>
+
 #include <SPI.h>
 #include <UIPEthernet.h>
 #include <WString.h>
 //#include "/home/sean/Projects/curve-tracer/teensySketch/WebServer.h"
 
-byte mac[6] = {0x00,0x00,0x00,0x00,0x00,0x05};
+byte mac[6] = {0x00,0x00,0x00,0x05,0x05,0x05};
 String readString = String(100);
 boolean reading = false;
 String myStr;
 
-// how the API works.
-  //v0 = -12      bottom Volage
-  //v1 = 12       top voltage
-  //voltage = 0.5      voltage step
-  //cStep = 5        current trace
-  //relay = 0     relay off (pnp vs npn)
-  //testID = 00123  the id of the test
-
-float v0 = 0.0;
-float v1 = 0.0;
-float voltage = 0.0;
-float cStep = 0.0;
-bool relay = 0;
-long id = 0;
-
 bool enableServer = true;
 bool enableApi = true;
+bool enableDebug = true;
 
 EthernetServer server(80);
 EthernetServer api(8080);
@@ -68,26 +62,24 @@ void setup() {
 
 }
 
-void htmlInterface(UIPClient client);
-void apiInterface(UIPClient client);
-void parseTehThings(String str);
-
-int count = 0;
-
-void loop() {
+void loop() {  
   // listen for incoming clients
+  EthernetClient client = server.available();  
   EthernetClient apiClient = api.available();
-  EthernetClient client = server.available();
-
-  if (client && enableServer) {
+ 
+  if (apiClient && enableApi) {
+    if (reqCount == 0 ) {
+      reqCount ++;
+      Serial.println("Api");
+      apiInterface(apiClient);
+      reqCount = 0;
+    }
+  }
+  else if (client && enableServer) {
     Serial.println("Client");
     htmlInterface(client);
   }
- 
-  if (apiClient && enableApi) {
-    Serial.println("Api");
-    apiInterface(apiClient);
-  }
+
 }
 
 void htmlInterface(UIPClient client) {
@@ -104,10 +96,12 @@ void htmlInterface(UIPClient client) {
 
 void apiInterface(UIPClient client) {
   Serial.println(count);
-  boolean currentLineIsBlank = true;
+  int indexes[6] = {};
   myStr = "";
+  boolean currentLineIsBlank = true;
+  
   while (client.connected()) {
-      if (client.available()) {
+    if (client.available()) {
 
         char c = client.read();
 
@@ -133,7 +127,78 @@ void apiInterface(UIPClient client) {
         }
       }
     }
-    Serial.println(myStr);
+    
+     getIndexes(indexes, myStr);
+     
+     if (enableDebug) {
+       for(int i=0; i< sizeof(indexes)/sizeof(indexes[0]); i++) {
+         Serial.print("index: ");
+         Serial.print(i);
+         Serial.print(" : ");
+         Serial.print(indexes[i]); 
+         Serial.print(" : ");
+         if (i < 5) {
+           Serial.println(myStr.substring(indexes[i] + 1, indexes[i+1]));
+         } else {
+           Serial.println("End of string"); 
+         }
+       }
+     }
+     
+     /* Test variables get setup here:
+      a = id
+      b = voltage
+      c = base current
+      d = relay1
+      e = relay2
+     */
+     int id = 0;
+     float voltage, baseCurrent;
+     bool relay1, relay2;
+     
+     
+     for(int i=0; i< sizeof(indexes)/sizeof(indexes[0]); i++) {
+       String toConvert = "";
+       char convertBuffer[32];
+       
+       switch (i) {
+         case 0:
+           id = myStr.substring(indexes[i] + 1, indexes[i+1]).toInt();
+           break;
+         case 1:
+           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+           toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
+           voltage = atof(convertBuffer);
+           break;
+         case 2:
+           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+           toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
+           baseCurrent = atof(convertBuffer)/1000.0;
+           break;
+         case 3:
+           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+           relay1 = toConvert == "1" ? true : false;
+           break;
+         case 4:
+           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+           relay2 = toConvert == "1" ? true : false;         
+           break;
+         default:
+           break;
+       }
+     }
+     Serial.print("ID in int form: ");
+     Serial.println(id);
+     Serial.print("Voltage in float form: ");
+     Serial.println(voltage);
+     Serial.print("baseCurrent in float form: ");
+     Serial.println(baseCurrent);
+     Serial.print("relay1 in bool: ");
+     Serial.println(relay1);
+     Serial.print("relay2 in bool: ");
+     Serial.println(relay2);
+     
+   // Serial.println(myStr);
       client.print(jsonHeader);
       client.print("{\"id\":");
       client.print(count);
@@ -145,8 +210,13 @@ void apiInterface(UIPClient client) {
       count ++;
 }
 
-void parseTehThings(String str) {
-  int startIndex = str.indexOf("v0");
- // int endIndex =
+void getIndexes (int* indexes, String myStr) {
+  char i = 97; //a  stop after //e (101) finsied symbol = f
+  int count = 0;
+    while (i < 103) {
+      indexes[count] = myStr.indexOf(i);
+      i++;
+      count++;
+    }
 }
 
