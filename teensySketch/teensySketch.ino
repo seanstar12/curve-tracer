@@ -54,13 +54,14 @@ void setup() {
   Ethernet.begin(mac);
   api.begin();
   server.begin();
-  while (!Serial) { ; };
+  //while (!Serial) { ; };
   
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
-  enableApi ? Serial.print("api is running on 8080") : Serial.print("API Disabled");
+  enableApi ? Serial.println("api is running on 8080") : Serial.println("API Disabled");
 
 }
+int count = 0;
 
 void loop() {  
   // listen for incoming clients
@@ -68,15 +69,11 @@ void loop() {
   EthernetClient apiClient = api.available();
  
   if (apiClient && enableApi) {
-    if (reqCount == 0 ) {
-      reqCount ++;
-      Serial.println("Api");
+      Serial.print("Api Call: ");
       apiInterface(apiClient);
-      reqCount = 0;
-    }
   }
   else if (client && enableServer) {
-    Serial.println("Client");
+    Serial.print("Client Call: ");
     htmlInterface(client);
   }
 
@@ -100,113 +97,133 @@ void apiInterface(UIPClient client) {
   myStr = "";
   boolean currentLineIsBlank = true;
   
+       
+  /* Test variables get setup here:
+    a = id
+    b = voltage
+    c = base current
+    d = relay1
+    e = relay2
+  */
+
+  int id = 0;
+  float voltage, baseCurrent;
+  bool relay1, relay2;
+  
   while (client.connected()) {
     if (client.available()) {
+      char c = client.read();
 
-        char c = client.read();
+      if (reading && c == ' ' || c == '\r' || c == '\n') {
+        reading = false;
+      } else if (c == '?') {
+        reading = true; //found the ?, begin reading the info
+      }
 
-        if (reading && c == ' ' || c == '\r' || c == '\n') {
-          reading = false;
-        } else if (c == '?') {
-          reading = true; //found the ?, begin reading the info
-        }
-
-        if(reading){
-          //Serial.print(c);
-          if (c!='?') {
-            myStr += c;
-          }
-        }
-
-        if (c == '\n' && currentLineIsBlank)  break;
-
-        if (c == '\n') {
-          currentLineIsBlank = true;
-        }else if (c != '\r') {
-          currentLineIsBlank = false;
+      if(reading){
+        //Serial.print(c);
+        if (c!='?') {
+          myStr += c;
         }
       }
+
+      if (c == '\n' && currentLineIsBlank)  break;
+
+      if (c == '\n') {
+        currentLineIsBlank = true;
+      }else if (c != '\r') {
+        currentLineIsBlank = false;
+      }
     }
+  }
     
-     getIndexes(indexes, myStr);
-     
-     if (enableDebug) {
-       for(int i=0; i< sizeof(indexes)/sizeof(indexes[0]); i++) {
-         Serial.print("index: ");
-         Serial.print(i);
-         Serial.print(" : ");
-         Serial.print(indexes[i]); 
-         Serial.print(" : ");
-         if (i < 5) {
-           Serial.println(myStr.substring(indexes[i] + 1, indexes[i+1]));
-         } else {
-           Serial.println("End of string"); 
-         }
-       }
-     }
-     
-     /* Test variables get setup here:
-      a = id
-      b = voltage
-      c = base current
-      d = relay1
-      e = relay2
-     */
-     int id = 0;
-     float voltage, baseCurrent;
-     bool relay1, relay2;
-     
-     
-     for(int i=0; i< sizeof(indexes)/sizeof(indexes[0]); i++) {
-       String toConvert = "";
-       char convertBuffer[32];
-       
-       switch (i) {
-         case 0:
-           id = myStr.substring(indexes[i] + 1, indexes[i+1]).toInt();
-           break;
-         case 1:
-           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
-           toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
-           voltage = atof(convertBuffer);
-           break;
-         case 2:
-           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
-           toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
-           baseCurrent = atof(convertBuffer)/1000.0;
-           break;
-         case 3:
-           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
-           relay1 = toConvert == "1" ? true : false;
-           break;
-         case 4:
-           toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
-           relay2 = toConvert == "1" ? true : false;         
-           break;
-         default:
-           break;
-       }
-     }
-     Serial.print("ID in int form: ");
-     Serial.println(id);
-     Serial.print("Voltage in float form: ");
-     Serial.println(voltage);
-     Serial.print("baseCurrent in float form: ");
-     Serial.println(baseCurrent);
-     Serial.print("relay1 in bool: ");
-     Serial.println(relay1);
-     Serial.print("relay2 in bool: ");
-     Serial.println(relay2);
-     
-   // Serial.println(myStr);
-      client.print(jsonHeader);
-      client.print("{\"id\":");
-      client.print(count);
-      client.print(", \"voltage\": ");
-      client.print( (float(count)) / (float(count) * float(count)));
-      client.print("}");
-      delay(100); // allow for browser to take our data.
-      client.stop();
+  getIndexes(indexes, myStr);
+  
+  // Shows indexes of incoming variables from url
+  if (enableDebug && false) {
+    for(int i=0; i< sizeof(indexes)/sizeof(indexes[0]); i++) {
+      Serial.print("index: ");
+      Serial.print(i);
+      Serial.print(" : ");
+      Serial.print(indexes[i]); 
+      Serial.print(" : ");
+      if (i < 5) {
+        Serial.println(myStr.substring(indexes[i] + 1, indexes[i+1]));
+      } else {
+        Serial.println("End of string"); 
+      }
+    }
+  }
+  
+  for(int i=0; i< sizeof(indexes)/sizeof(indexes[0]); i++) {
+    String toConvert = "";
+    char convertBuffer[32];
+    
+    switch (i) {
+      case 0:
+        id = myStr.substring(indexes[i] + 1, indexes[i+1]).toInt();
+        break;
+      case 1:
+        toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+        toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
+        voltage = atof(convertBuffer);
+        break;
+      case 2:
+        toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+        toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
+        baseCurrent = atof(convertBuffer)/1000.0;
+        break;
+      case 3:
+        toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+        relay1 = toConvert == "1" ? true : false;
+        break;
+      case 4:
+        toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
+        relay2 = toConvert == "1" ? true : false;         
+        break;
+      default:
+        break;
+    }
+  }
+  
+  // shows numbers after they have been converted from the url
+  // and the switch case above
+  if (enableDebug && false) {
+    Serial.print("ID in int form: ");
+    Serial.println(id);
+    Serial.print("Voltage in float form: ");
+    Serial.println(voltage);
+    Serial.print("baseCurrent in float form: ");
+    Serial.println(baseCurrent);
+    Serial.print("relay1 in bool: ");
+    Serial.println(relay1);
+    Serial.print("relay2 in bool: ");
+    Serial.println(relay2);
+  }
+  
+  //DO TEST LOGIC HERE.
+
+  // prints out the response.
+   client.print(jsonHeader);
+   client.print("{\"id\":");
+   client.print(id);      
+   client.print(", \"voltage\": ");
+   client.print( (float(count)) / (float(count) * float(count)));
+   client.print(", \"params\" : { ");
+     client.print("\"id\": ");
+     client.print(id);
+     client.print(", \"voltage\": ");
+     client.print(voltage);
+     client.print(", \"baseCurrent\": ");
+     client.print(baseCurrent);
+     client.print(", \"relay1\": ");
+     client.print(relay1);
+     client.print(", \"relay2\": ");
+     client.print(relay2);
+     client.print("}");
+   client.print("}");
+   delay(100); // allow for browser to take our data.
+   client.stop();
       count ++;
 }
 
