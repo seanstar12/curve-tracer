@@ -2,6 +2,14 @@
   Example Api request:
   
     GET 10.0.1.23:8080/?a443b-7.32c20d0e1f
+
+    /?a******b******c******d*e*f
+    a = ID
+    b = Voltage of Test
+    C = mA of current of Test
+    d = relay1 for npn vs pnp
+    e = relay2 for mosfet. also uses d for npn vs pnp
+    f = signifies end of params.
   
   yields:
   
@@ -232,18 +240,18 @@ void apiInterface(UIPClient client) {
    client.print(", \"voltage\": ");
    client.print( (float(count)) / (float(count) * float(count)));
    if (enableParams) {
-     client.print(", \"params\" : { ");
-       client.print("\"id\": ");
-       client.print(id);
-       client.print(", \"voltage\": ");
-       client.print(voltage);
-       client.print(", \"baseCurrent\": ");
-       client.print(baseCurrent);
-       client.print(", \"relay1\": ");
-       client.print(relay1);
-       client.print(", \"relay2\": ");
-       client.print(relay2);
-       client.print("}");
+   client.print(", \"params\" : { ");
+     client.print("\"id\": ");
+     client.print(id);
+     client.print(", \"voltage\": ");
+     client.print(voltage);
+     client.print(", \"baseCurrent\": ");
+     client.print(baseCurrent);
+     client.print(", \"relay1\": ");
+     client.print(relay1);
+     client.print(", \"relay2\": ");
+     client.print(relay2);
+     client.print("}");
    }
    client.print("}");
    delay(100); // allow for browser to take our data.
