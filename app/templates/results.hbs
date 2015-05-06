@@ -1,11 +1,19 @@
-<h3>Current Configuration</h3>
-Type: {{model.type}}
-<br />
-Increment: {{model.increment}}
-<br />
-Voltage Range From: {{model.voltageRangeFrom}}
-<br />
-Voltage Range To: {{model.voltageRangeTo}}
+<div class="large-9 medium-8 columns">
+  <h3>Current Configuration</h3>
+  Type: {{model.type}}
+  <br />
+  Increment: {{model.increment}}
+  <br />
+  Voltage Range From: {{model.voltageRangeFrom}}
+  <br />
+  Voltage Range To: {{model.voltageRangeTo}}
+</div>
+<div class="large-3 medium-4 columns">
+  <br/>
+  {{download-link data=model}}
+</div>
 
+<div class="large-12 medium-12 columns">
 {{test-chart test=model}}
+</div>
 

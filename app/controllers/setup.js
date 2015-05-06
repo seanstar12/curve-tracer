@@ -7,7 +7,7 @@ export default Ember.Controller.extend({
   incrementMax: 1,
   incrementStep: 0.005,
 
-  voltageRangeMin: -10,
-  voltageRangeMax: 10,
+  voltageRangeMin: -7.95,
+  voltageRangeMax: 7.95,
   voltageRangeStep: 0.05,
 });

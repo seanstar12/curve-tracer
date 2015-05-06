@@ -28,14 +28,6 @@
    params should be disabled in final product.
    
 */
-#include <ethernet_comp.h>
-#include <UIPUdp.h>
-#include <UIPServer.h>
-#include <UIPEthernet.h>
-#include <UIPClient.h>
-#include <Dns.h>
-#include <Dhcp.h>
-
 #include <SPI.h>
 #include <UIPEthernet.h>
 #include <WString.h>
@@ -49,6 +41,14 @@ bool enableServer = true;
 bool enableApi = true;
 bool enableDebug = true;
 bool enableParams = true;
+
+int gSerialClk = 23;
+int gSerialTx = 22;
+int dac1 = 21;
+int dac2 = 20;
+int analogueIn = 19;
+int relayOne = 2;
+int relayTwo = 3;
 
 EthernetServer server(80);
 EthernetServer api(8080);
@@ -65,7 +65,7 @@ char page[] PROGMEM =
       "Curve Tracer Pro Platinum"
     "</title></head>"
     "<body>"
-      "<h3>Ohai Guise</h3>"
+      "<h3>Curve Tracer Pro Platinum</h3>"
     "</body>"
   "</html>";
 
@@ -78,7 +78,25 @@ char jsonHeader[] PROGMEM =
 
 void setup() {
  // Open serial communications and wait for port to open:
+  
+  pinMode(gSerialClk, OUTPUT);
+  pinMode(gSerialTx, OUTPUT);
+  pinMode(dac1, OUTPUT);
+  pinMode(dac2, OUTPUT);
+  pinMode(relayOne, OUTPUT);
+  pinMode(relayTwo, OUTPUT);
 
+  //Test Dem Relays Son.
+  for (int i =0; i < 1; i++) {
+    digitalWrite(relayOne, !digitalRead(relayOne));
+    delay(200);
+    digitalWrite(relayTwo, !digitalRead(relayTwo));
+    delay(200);
+  }
+  
+  digitalWrite(relayOne, LOW);
+  digitalWrite(relayTwo, LOW);
+  
   Serial.begin(57600);
 
   Ethernet.begin(mac);
@@ -166,7 +184,7 @@ void apiInterface(UIPClient client) {
       }
     }
   }
-    
+  
   getIndexes(indexes, myStr);
   
   // Shows indexes of incoming variables from url
@@ -196,12 +214,12 @@ void apiInterface(UIPClient client) {
       case 1:
         toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
         toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
-        voltage = atof(convertBuffer);
+        voltage = ((atof(convertBuffer) + 8) * 256) + 2048;
         break;
       case 2:
         toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
         toConvert.toCharArray(convertBuffer, sizeof(convertBuffer));
-        baseCurrent = atof(convertBuffer)/1000.0;
+        baseCurrent = (atof(convertBuffer) +7.5) * (4096/15) + 2048;
         break;
       case 3:
         toConvert = myStr.substring(indexes[i] + 1, indexes[i+1]);
@@ -230,21 +248,32 @@ void apiInterface(UIPClient client) {
     Serial.print("relay2 in bool: ");
     Serial.println(relay2);
   }
-  
-  //DO TEST LOGIC HERE.
+  // LOGICS GOES HERE
+   bool bitStream[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   voltageToBits( voltage,  bitStream);
+   ghettoSerial(bitStream, dac1);
+   
+   //Second Dac - base current
+   bool bitStream2[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   voltageToBits( baseCurrent,  bitStream2);
+   ghettoSerial(bitStream2, dac2);
+   delay(20);
+   digitalWrite(relayOne, (relay1) ? HIGH : LOW);
+   digitalWrite(relayTwo, (relay2) ? HIGH : LOW);
 
   // prints out the response.
    client.print(jsonHeader);
    client.print("{\"id\":");
    client.print(id);      
-   client.print(", \"voltage\": ");
-   client.print( (float(count)) / (float(count) * float(count)));
+   client.print(", \"current\": ");
+   //client.print( (float(count)) / (float(count) * float(count)));
+   client.print(analogRead(analogueIn));
    if (enableParams) {
    client.print(", \"params\" : { ");
      client.print("\"id\": ");
      client.print(id);
      client.print(", \"voltage\": ");
-     client.print(voltage);
+     client.print(voltConvertToScale(voltage) * (-1));
      client.print(", \"baseCurrent\": ");
      client.print(baseCurrent);
      client.print(", \"relay1\": ");
@@ -254,9 +283,67 @@ void apiInterface(UIPClient client) {
      client.print("}");
    }
    client.print("}");
+   digitalWrite(relayOne, LOW);
+   digitalWrite(relayTwo, LOW);
    delay(100); // allow for browser to take our data.
    client.stop();
-      count ++;
+   count ++;
+}
+
+int voltConvertToScale(float voltage) {
+  voltage = voltage + 8;
+  voltage = voltage * 256;
+  voltage += 2048;
+  return int (floor(voltage));
+}
+
+//int voltage 0-4095
+//bool bitStream array of 16 bits
+void voltageToBits(int voltage, bool *bitStream) {
+  bool tempArray[15], r, w;
+  int y1 = 0;
+  int y2 = 0;
+  
+  while (y1 < 16) {
+    r = voltage % 2;
+    tempArray[y1] = r;
+    voltage = voltage/2;
+    y1++;
+  }
+  
+  while (y1 > 0) {
+    y1--;
+    bitStream[y2] = tempArray[y1];
+    y2++;
+  }
+}
+
+void ghettoSerial(bool * bits, int dac) {
+  //digitalWrite(gSerialClk, HIGH); //sclk
+  digitalWrite(dac, LOW); // turn DAC back off
+
+  int clockCount = 30;
+  int clockFreq = 5;
+  //gSerialClk
+  //gSerialTx
+  for (int i=0; i < 1; i++) {
+    //digitalWrite(gSerialClk, !digitalRead(gSerialClk));
+   // delay(clockFreq);
+  }
+  for (int i=0; i < clockCount + 1; i++) {
+
+    digitalWrite(gSerialClk, !digitalRead(gSerialClk));
+    delay(clockFreq);
+    if (!(i % 2)) {
+      Serial.print(bits[i/2]);
+      digitalWrite(gSerialTx, (bits[i/2]) ? HIGH : LOW);
+      delay(2);
+    }
+  }
+  Serial.println();
+  digitalWrite(gSerialTx, LOW);  // turn off Serial transmission
+  digitalWrite(gSerialClk, LOW);
+  digitalWrite(dac, HIGH); // turn DAC back off
 }
 
 void getIndexes (int* indexes, String myStr) {
@@ -268,4 +355,3 @@ void getIndexes (int* indexes, String myStr) {
       count++;
     }
 }
-
